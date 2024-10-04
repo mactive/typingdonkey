@@ -7,6 +7,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { saveAudioFile } from '@/utils/goapi/tts'
+
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -46,7 +48,12 @@ export const columns: ColumnDef<Payment>[] = [
           </Popover>
         )
       } else {
-        return <div className="text-center font-medium">no voice</div>
+        const fileName = "sentence_"+row.getValue("id")+".mp3"
+        return <div className="text-center font-medium">
+          <button onClick={()=>{
+            saveAudioFile(row.getValue("content"), fileName);
+          }}>download</button>
+        </div>
       }
     },
   },
