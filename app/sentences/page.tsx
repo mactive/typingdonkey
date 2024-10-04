@@ -11,7 +11,7 @@ export default async function Sentences() {
 
   return (
     <div className="container mx-auto py-10">
-      <DataTable columns={columns} data={sentences}/>
+      <DataTable columns={columns} data={sentences!}/>
     </div>
   )
 //   return <pre>{JSON.stringify(sentences, null, 2)}</pre>

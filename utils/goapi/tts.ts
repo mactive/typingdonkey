@@ -5,10 +5,11 @@ import * as fs from 'fs';
 
 
 import path from 'path';
-import fetch from 'node-fetch'
+import fetch, { RequestInit } from 'node-fetch'
 
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { createClient } from '@/utils/supabase/server';
+
 
 
 export async function getAudioFile(tts_content: string, fileId: number): Promise<string> {  
@@ -16,7 +17,7 @@ export async function getAudioFile(tts_content: string, fileId: number): Promise
   log(tts_content,fileName)
 
   const url = 'https://api.goapi.ai/v1/audio/speech';
-  let options = {
+  let options: RequestInit = {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer 357d9d6f40262236c62135a3bccd3dd4e61ce1c83791b4128473498bec84d371',
@@ -58,13 +59,20 @@ export async function getAudioFile(tts_content: string, fileId: number): Promise
       // ...
 
       // 将音频数据写入文件
-      await fspromises.writeFile(filePath, Buffer.from(audioData), (err) => {
-        if (err) {
-          console.error('Error writing audio file:', err);
-        } else {
-          console.log('Audio file saved successfully');
-        }
-      });
+      try {
+        await fspromises.writeFile(filePath, Buffer.from(audioData).toString());
+        console.log('Audio file saved successfully');
+      } catch (err) {
+        // 处理文件写入错误
+        console.error('Error writing audio file:', err);
+      }
+      // await fspromises.writeFile(filePath, Buffer.from(audioData).toString(), (err: any) => {
+      //   if (err) {
+      //     console.error('Error writing audio file:', err);
+      //   } else {
+      //     console.log('Audio file saved successfully');
+      //   }
+      // });
 
       await uploadAudioFile(filePath, fileName, fileId)
       return `/audio/${fileName}`;
