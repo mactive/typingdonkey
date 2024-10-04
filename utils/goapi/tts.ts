@@ -11,7 +11,8 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 import { createClient } from '@/utils/supabase/server';
 
 
-export async function getAudioFile(tts_content: string, fileName: string): Promise<string> {  
+export async function getAudioFile(tts_content: string, fileId: number): Promise<string> {  
+  const fileName = "sentence_"+fileId.toString()+".mp3"
   log(tts_content,fileName)
 
   const url = 'https://api.goapi.ai/v1/audio/speech';
@@ -44,8 +45,8 @@ export async function getAudioFile(tts_content: string, fileName: string): Promi
     const filePath = path.join(process.cwd(), 'public', 'audio', fileName);
 
     if (fs.existsSync(filePath)) {
-      console.log('文件存在', filePath);
-      await uploadAudioFile(filePath, fileName)
+      console.log('文件存在', filePath, fileName);
+      await uploadAudioFile(filePath, fileName, fileId)
       return `/audio/${fileName}`;
     } else {
       console.log('文件不存在');
@@ -65,7 +66,7 @@ export async function getAudioFile(tts_content: string, fileName: string): Promi
         }
       });
 
-      await uploadAudioFile(filePath, fileName)
+      await uploadAudioFile(filePath, fileName, fileId)
       return `/audio/${fileName}`;
     }
   } catch (error) {
@@ -74,26 +75,55 @@ export async function getAudioFile(tts_content: string, fileName: string): Promi
   }
 }
 
-export async function uploadAudioFile(file_path: string, fileName: string): Promise<string> { 
+export async function uploadAudioFile(filePath: string, fileName: string, fileId: number): Promise<string> { 
   const supabase = createClient();
 
   // upload to storage
-  const { data, error } = await supabase.storage
+  console.log('上传文件', fileName, filePath);
+  const Buffer = fs.readFileSync(filePath);
+  const { data: SData, error } :{data: StorageData | null, error: Error | null } = await supabase.storage
     .from('typingdonkey')
-    .upload(file_path, fileName)
+    .upload("sentences/"+fileName, Buffer, {
+      contentType: 'audio/mpeg',
+      cacheControl: '3600',
+      upsert: true,
+    })
   if (error) {
     // Handle error
     console.log(error)
   } else {
     // Handle success
-    console.log(data)
+    console.log(SData)
   }
-  return data?.fullPath
-  // update database
-  
-  // const { data: sentences } = await supabase
-  //   .from("sentences")
-  //   .select('id,source,content,voice_url')
-  //   .order('id', { ascending: true });
 
+  // update database
+  // TODO 拼接完整的url ,改成 id
+  if(SData && SData?.id && SData.fullPath) {
+    const voiceUrl = "https://ievuvdhmmcfrgzbhbrvw.supabase.co/storage/v1/object/public/"+SData?.fullPath
+    
+    console.log(voiceUrl, SData, fileId)
+    const { data: sentences, error } = await supabase
+      .from("sentences")
+      .update({ 'voice_url': voiceUrl, 'bucket_id': SData?.id })
+      .eq('id', fileId)
+    
+      if (error) {
+        // Handle error
+        console.log('update error',error)
+      } else {
+        // Handle success
+        console.log('update success',sentences)
+      }
+    
+  } else {
+    console.log("SData 结构不合法")
+  }
+  
+  return 'success'
 } 
+
+type StorageData = {
+  path: string      //'sentence_2.mp3',
+  id: string        // '9f366e19-0dc0-4138-bbd5-eb657480fc3c',
+  fullPath: string  // 'typingdonkey/sentence_2.mp3'
+}

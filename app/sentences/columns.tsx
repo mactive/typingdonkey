@@ -48,11 +48,10 @@ export const columns: ColumnDef<Payment>[] = [
           </Popover>
         )
       } else {
-        const fileName = "sentence_"+row.getValue("id")+".mp3"
         return <div className="text-center font-medium">
-          <button onClick={()=>{
-            getAudioFile(row.getValue("content"), fileName);
-          }}>download</button>
+          <Button variant="secondary" onClick={()=>{
+            getAudioFile(row.getValue("content"), row.getValue("id"));
+          }}>download</Button>
         </div>
       }
     },
@@ -60,11 +59,11 @@ export const columns: ColumnDef<Payment>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      if (row.getValue("voice_url")) {
-        return
-      } else {
-        return <Button variant="default">update audio</Button>
-      }
+      return <div className="text-center font-medium">
+        <Button variant="link" onClick={()=>{
+          getAudioFile(row.getValue("content"), row.getValue("id"));
+        }}>redownload</Button>
+      </div>
     }
   }
 ]
