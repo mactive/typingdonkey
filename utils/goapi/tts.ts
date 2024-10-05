@@ -60,6 +60,7 @@ export async function getAudioFile(tts_content: string, fileId: number): Promise
 
       // 将音频数据写入文件
       try {
+        // @ts-ignore
         await fspromises.writeFile(filePath, Buffer.from(audioData));
         console.log('Audio file saved successfully');
       } catch (err) {
