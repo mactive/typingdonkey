@@ -16,9 +16,9 @@ export type Payment = {
   // 自增ID
   id: number
   // 句子来源
-  source: string
+  tags: string
   // 句子内容
-  content: string
+  en_content: string
   // 句子发音
   voice_url: string
 }
@@ -29,12 +29,12 @@ export const columns: ColumnDef<Payment>[] = [
     header: "Id",
   },
   {
-    accessorKey: "source",
-    header: "Source",
+    accessorKey: "tags",
+    header: "tags",
   },
   {
-    accessorKey: "content",
-    header: "Content",
+    accessorKey: "en_content",
+    header: "en_content",
   },
   {
     accessorKey: "voice_url",
@@ -49,8 +49,10 @@ export const columns: ColumnDef<Payment>[] = [
         )
       } else {
         return <div className="text-center font-medium">
-          <Button variant="secondary" onClick={()=>{
-            getAudioFile(row.getValue("content"), row.getValue("id"));
+          <Button variant="secondary" onClick={async ()=>{
+            await getAudioFile(row.getValue("en_content"), row.getValue("id"));
+            console.log("===done==")
+            location.reload();
           }}>download</Button>
         </div>
       }
@@ -60,8 +62,10 @@ export const columns: ColumnDef<Payment>[] = [
     id: "actions",
     cell: ({ row }) => {
       return <div className="text-center font-medium">
-        <Button variant="link" onClick={()=>{
-          getAudioFile(row.getValue("content"), row.getValue("id"));
+        <Button variant="link" onClick={async ()=>{
+          await getAudioFile(row.getValue("en_content"), row.getValue("id"));
+          console.log("===done==")
+          location.reload();
         }}>redownload</Button>
       </div>
     }

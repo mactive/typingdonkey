@@ -27,7 +27,7 @@ export async function getAudioFile(tts_content: string, fileId: number): Promise
     body: JSON.stringify({
       "model": "tts-1",
       "input": tts_content,
-      "voice": "alloy",
+      "voice": "echo",
       "response_format": "mp3"
     }),
   };
@@ -60,19 +60,12 @@ export async function getAudioFile(tts_content: string, fileId: number): Promise
 
       // 将音频数据写入文件
       try {
-        await fspromises.writeFile(filePath, Buffer.from(audioData).toString());
+        await fspromises.writeFile(filePath, Buffer.from(audioData));
         console.log('Audio file saved successfully');
       } catch (err) {
         // 处理文件写入错误
         console.error('Error writing audio file:', err);
       }
-      // await fspromises.writeFile(filePath, Buffer.from(audioData).toString(), (err: any) => {
-      //   if (err) {
-      //     console.error('Error writing audio file:', err);
-      //   } else {
-      //     console.log('Audio file saved successfully');
-      //   }
-      // });
 
       await uploadAudioFile(filePath, fileName, fileId)
       return `/audio/${fileName}`;
@@ -91,7 +84,7 @@ export async function uploadAudioFile(filePath: string, fileName: string, fileId
   const Buffer = fs.readFileSync(filePath);
   const { data: SData, error } :{data: StorageData | null, error: Error | null } = await supabase.storage
     .from('typingdonkey')
-    .upload("sentences/"+fileName, Buffer, {
+    .upload("sentences_100/"+fileName, Buffer, {
       contentType: 'audio/mpeg',
       cacheControl: '3600',
       upsert: true,
@@ -111,7 +104,7 @@ export async function uploadAudioFile(filePath: string, fileName: string, fileId
     
     console.log(voiceUrl, SData, fileId)
     const { data: sentences, error } = await supabase
-      .from("sentences")
+      .from("sentences_100")
       .update({ 'voice_url': voiceUrl, 'bucket_id': SData?.id })
       .eq('id', fileId)
     

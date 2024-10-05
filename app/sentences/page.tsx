@@ -5,8 +5,8 @@ import { DataTable } from "./data-table"
 export default async function Sentences() {
   const supabase = createClient();
   const { data: sentences } = await supabase
-    .from("sentences")
-    .select('id,source,content,voice_url')
+    .from("sentences_100")
+    .select('id,tags,en_content,voice_url')
     .order('id', { ascending: true });
 
   return (
